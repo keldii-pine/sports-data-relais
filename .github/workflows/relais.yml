@@ -1,0 +1,33 @@
+name: Aspiration Automatique (Toutes les heures)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  extraction:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v3
+
+      - name: Installation de Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Installation de Requests
+        run: pip install requests
+
+      - name: Exécution du Scraper
+        run: python scraper.py
+
+      - name: Sauvegarde et publication des données
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add donnees_du_jour.json
+          git commit -m "Mise à jour horaire des datas" || echo "Aucun changement détecté"
+          git push
