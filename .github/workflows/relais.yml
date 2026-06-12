@@ -18,8 +18,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Installation de l'arme furtive (curl_cffi)
-        run: pip install curl_cffi
+      - name: Installation du Navigateur Fantôme (Playwright)
+        run: |
+          pip install playwright
+          playwright install chromium
 
       - name: Exécution du Scraper
         run: python scraper.py
@@ -29,5 +31,5 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add donnees_du_jour.json
-          git commit -m "Mise à jour horaire des datas" || echo "Aucun changement détecté"
+          git commit -m "Mise à jour horaire via Playwright" || echo "Aucun changement détecté"
           git push
