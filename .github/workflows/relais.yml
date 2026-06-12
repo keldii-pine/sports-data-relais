@@ -18,8 +18,8 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Installation de Requests
-        run: pip install requests
+      - name: Installation de l'arme furtive (curl_cffi)
+        run: pip install curl_cffi
 
       - name: Exécution du Scraper
         run: python scraper.py
