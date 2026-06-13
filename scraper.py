@@ -1,51 +1,26 @@
-from playwright.sync_api import sync_playwright
+import requests
 import json
 from datetime import datetime
 
-# Le cerveau temporel 
 date_du_jour = datetime.now().strftime("%Y-%m-%d")
-url_api = f"https://api.sofascore.com/api/v1/sport/football/scheduled-events/{date_du_jour}"
+url = f"https://api.sofascore.com/api/v1/sport/football/scheduled-events/{date_du_jour}"
 
-print(f"Déploiement du Navigateur Fantôme pour la date : {date_du_jour}...")
+# Le camouflage parfait : On annonce au pare-feu que c'est un iPhone qui navigue
+headers = {
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1"
+}
 
-with sync_playwright() as p:
-    # 1. Lancement d'un vrai navigateur Chrome (invisible)
-    browser = p.chromium.launch(headless=True)
-    
-    # On lui donne la signature d'un vrai PC Windows
-    context = browser.new_context(
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-    )
-    page = context.new_page()
-    
-    try:
-        # 2. Phase d'approche : On visite le site normal pour valider le JavaScript Challenge de Cloudflare
-        print("Étape 1 : Validation du ticket Cloudflare sur la page d'accueil...")
-        page.goto("https://www.sofascore.com/", wait_until="domcontentloaded")
-        page.wait_for_timeout(3000) # On simule un humain qui regarde la page 3 secondes
-        
-        # 3. La Frappe : Maintenant qu'on est validé, on attaque le flux JSON
-        print("Étape 2 : Extraction des données pures...")
-        page.goto(url_api, wait_until="domcontentloaded")
-        
-        # Le navigateur affiche le JSON dans la page en texte brut, on le copie
-        content = page.locator("body").inner_text()
-        
-        # 4. Vérification et Sauvegarde
-        data = json.loads(content)
+print(f"Lancement de l'attaque depuis l'iPhone pour le {date_du_jour}...")
+
+response = requests.get(url, headers=headers, timeout=15)
+
+if response.status_code == 200:
+    data = response.json()
+    if "events" in data:
         with open("donnees_du_jour.json", "w") as f:
             json.dump(data, f)
-            
-        print(f"✅ BINGO ! Le mur est tombé. Fichier de données sauvegardé pour le {date_du_jour}.")
-        
-    except Exception as e:
-        print(f"❌ Échec de la mission. Rapport d'erreur : {e}")
-        # En cas d'échec, on imprime ce que le navigateur a vu pour comprendre
-        try:
-            print("Aperçu de la page bloquée :", content[:200])
-        except:
-            pass
-        exit(1)
-        
-    finally:
-        browser.close()
+        print(f"✅ BINGO ! Le pare-feu est tombé. L'IP mobile a fonctionné. {len(data['events'])} matchs extraits.")
+    else:
+        print("❌ Échec : Le pare-feu a renvoyé un faux JSON (Message d'erreur).")
+else:
+    print(f"❌ Échec. Erreur HTTP : {response.status_code}")
